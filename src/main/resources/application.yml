@@ -1,0 +1,22 @@
+quarkus:
+  google:
+    cloud:
+      project-id: ${QUARKUS_GOOGLE_CLOUD_PROJECT_ID:active-bolt-478008-c9}
+  http:
+    port: 8081
+  datasource:
+    db-kind: postgresql
+    jdbc:
+      url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  mybatis:
+    map-underscore-to-camel-case: true
+  native:
+    resources:
+      includes:
+        - db/migration/**
+pubsub:
+  topic: ${PUBSUB_TOPIC:poc-pubsub-performance}
+  subscription-id: ${SUBSCRIPTION_ID:poc-pubsub-sub-pull}
+  pull-options: ${PULL_OPTIONS}
