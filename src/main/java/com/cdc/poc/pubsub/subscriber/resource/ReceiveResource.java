@@ -59,9 +59,9 @@ public class ReceiveResource {
                     "Processing push message: testId={}, messageId={}, subscriptionType={}, subscriptionId={}, publishTime={}, receiveTime={}, receiveLatencyMs={}, payloadSizeKb={}",
                     header.testId(), header.messageId(), header.subscriptionType(), header.subscriptionId(),
                     publishTime, subscriberReceiveAt, receiveLatencyMs, attributes.get("payloadSizeInKb"));
-            stressTestRepo.updateTestResult(header.testId(), header.messageId(), header.topicArrivalTime(),
+            stressTestRepo.updateTopicResult(header.testId(), header.messageId(), header.topicArrivalTime(),
                     publishTime);
-            stressTestRepo.createTestSubscriberResult(new TestSubscriberResult(header.testId(), header.messageId(),
+            stressTestRepo.createSubscriberResult(new TestSubscriberResult(header.testId(), header.messageId(),
                     header.subscriptionType(), header.subscriptionId(),
                     header.subscriptionPublishTime() == null ? pubsubMessage.publishTime()
                             : header.subscriptionPublishTime(),
