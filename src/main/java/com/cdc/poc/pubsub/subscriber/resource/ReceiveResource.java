@@ -1,5 +1,6 @@
 package com.cdc.poc.pubsub.subscriber.resource;
 
+import com.cdc.poc.pubsub.subscriber.config.PersistResultWorker;
 import com.cdc.poc.pubsub.subscriber.model.PocPubsubPerformanceHeader;
 import com.cdc.poc.pubsub.subscriber.model.PubsubMessage;
 import com.cdc.poc.pubsub.subscriber.model.PushRequest;
@@ -25,10 +26,10 @@ public class ReceiveResource {
     private static final long LOG_INTERVAL_MS = 10000; // Log stats every 10 seconds
 
     @Inject
-    StressTestRepo stressTestRepo;
+    ObjectMapper objectMapper;
 
     @Inject
-    ObjectMapper objectMapper;
+    PersistResultWorker persistResultWorker;
 
     @POST
     public Uni<RestResponse<Boolean>> receive(Map<String, Object> pushRequestRaw) {
@@ -59,13 +60,7 @@ public class ReceiveResource {
                     "Processing push message: testId={}, messageId={}, subscriptionType={}, subscriptionId={}, publishTime={}, receiveTime={}, receiveLatencyMs={}, payloadSizeKb={}",
                     header.testId(), header.messageId(), header.subscriptionType(), header.subscriptionId(),
                     publishTime, subscriberReceiveAt, receiveLatencyMs, attributes.get("payloadSizeInKb"));
-            stressTestRepo.updateTopicResult(header.testId(), header.messageId(), header.topicArrivalTime(),
-                    publishTime);
-            stressTestRepo.createSubscriberResult(new TestSubscriberResult(header.testId(), header.messageId(),
-                    header.subscriptionType(), header.subscriptionId(),
-                    header.subscriptionPublishTime() == null ? pubsubMessage.publishTime()
-                            : header.subscriptionPublishTime(),
-                    header.subscriptionArrivalTime(), subscriberReceiveAt, "", Instant.now()));
+            persistResultWorker.getMessageHeaderQueue().add(new PersistResultWorker.PersistResultWorkerResult(header, subscriberReceiveAt, publishTime,""));
             return Uni.createFrom().item(RestResponse.ok(true));
         } catch (Exception e) {
             long processingDurationMs = (System.nanoTime() - processingStartTime) / 1_000_000;

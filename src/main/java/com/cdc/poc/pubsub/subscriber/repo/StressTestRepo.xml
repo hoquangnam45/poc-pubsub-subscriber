@@ -5,14 +5,9 @@
         INSERT INTO test_subscriber_result(test_id, message_id, subscription_type, subscription_id, subscription_publish_time, subscription_arrival_time, subscriber_arrival_time, pull_options, created_at)
         VALUES(#{testId}, #{messageId}, #{subscriptionType}, #{subscriptionId}, #{subscriptionPublishTime}, #{subscriptionArrivalTime}, #{subscriberArrivalTime}, #{pullOptions}, #{createdAt})
     </insert>
-    <update id="updateTopicResult">
-        UPDATE test_topic_result
-        SET
-            topic_arrival_time = #{topicArrivalTime},
-            topic_publish_time = #{topicPublishTime}
-        WHERE
-            test_id = #{testId} AND
-            message_id = #{messageId} AND
-            (topic_arrival_time IS NULL OR topic_publish_time IS NULL)
-    </update>
+    <insert id="insertTopicResult">
+        INSERT INTO test_topic_result(test_id, message_id, topic_arrival_time, topic_publish_time)
+        VALUES (#{testId}, #{messageId}, #{topicArrivalTime}, #{topicPublishTime})
+        ON CONFLICT (test_id, message_id) DO NOTHING
+    </insert>
 </mapper>

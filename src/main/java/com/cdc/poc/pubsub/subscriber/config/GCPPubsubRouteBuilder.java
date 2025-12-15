@@ -35,7 +35,7 @@ public class GCPPubsubRouteBuilder extends RouteBuilder {
     ObjectMapper objectMapper;
 
     @Inject
-    StressTestRepo stressTestRepo;
+    PersistResultWorker persistResultWorker;
 
     private static final AtomicLong messageCount = new AtomicLong(0);
     private static final AtomicLong lastLogTime = new AtomicLong(System.currentTimeMillis());
@@ -83,12 +83,7 @@ public class GCPPubsubRouteBuilder extends RouteBuilder {
                         "Processing message: testId={}, messageId={}, subscriptionType={}, subscriptionId={}, publishTime={}, receiveTime={}, receiveLatencyMs={}, payloadSizeKb={}",
                         header.testId(), header.messageId(), header.subscriptionType(), header.subscriptionId(),
                         publishTime, subscriberReceiveAt, receiveLatencyMs, attributes.get("payloadSizeInKb"));
-                stressTestRepo.updateTopicResult(header.testId(), header.messageId(), header.topicArrivalTime(),
-                        header.topicPublishTime() == null ? publishTime : header.topicPublishTime());
-                stressTestRepo.createSubscriberResult(new TestSubscriberResult(header.testId(), header.messageId(),
-                        header.subscriptionType(), header.subscriptionId(),
-                        header.subscriptionPublishTime() == null ? publishTime : header.subscriptionPublishTime(),
-                        header.subscriptionArrivalTime(), subscriberReceiveAt, pullOptions, Instant.now()));
+                persistResultWorker.getMessageHeaderQueue().add(new PersistResultWorker.PersistResultWorkerResult(header, subscriberReceiveAt, publishTime, pullOptions));
             } catch (Exception e) {
                 long processingDurationMs = (System.nanoTime() - processingStartTime) / 1_000_000;
                 log.error("Failed to process message after {}ms. Reason: {}, exchangeHeaders: {}", processingDurationMs,
