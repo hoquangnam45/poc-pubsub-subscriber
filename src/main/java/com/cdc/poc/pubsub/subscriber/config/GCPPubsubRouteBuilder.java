@@ -1,8 +1,6 @@
 package com.cdc.poc.pubsub.subscriber.config;
 
 import com.cdc.poc.pubsub.subscriber.model.PocPubsubPerformanceHeader;
-import com.cdc.poc.pubsub.subscriber.model.TestSubscriberResult;
-import com.cdc.poc.pubsub.subscriber.repo.StressTestRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Timestamp;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -13,6 +11,7 @@ import org.apache.camel.component.google.pubsub.GooglePubsubConstants;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,9 +55,8 @@ public class GCPPubsubRouteBuilder extends RouteBuilder {
         String consumerUri = MessageFormat.format("google-pubsub:{0}:{1}{2}", projectId, subscriptionId, pullOptions);
         log.info("Starting GCP pubsub component consumers with configs: {}", consumerUri);
         from(consumerUri).process(exchange -> {
-            long processingStartTime = System.nanoTime();
+            Instant subscriberReceiveAt = Instant.now();
             try {
-                Instant subscriberReceiveAt = Instant.now();
                 Map<String, String> attributes = (Map<String, String>) exchange.getIn()
                         .getHeader(GooglePubsubConstants.ATTRIBUTES, new HashMap<>(), Map.class);
                 Timestamp timestamp = (Timestamp) exchange.getIn().getHeaders().get(GooglePubsubConstants.PUBLISH_TIME);
@@ -85,7 +83,7 @@ public class GCPPubsubRouteBuilder extends RouteBuilder {
                         publishTime, subscriberReceiveAt, receiveLatencyMs, attributes.get("payloadSizeInKb"));
                 persistResultWorker.getMessageHeaderQueue().add(new PersistResultWorker.PersistResultWorkerResult(header, subscriberReceiveAt, publishTime, pullOptions));
             } catch (Exception e) {
-                long processingDurationMs = (System.nanoTime() - processingStartTime) / 1_000_000;
+                long processingDurationMs = Duration.between(subscriberReceiveAt, Instant.now()).toMillis();
                 log.error("Failed to process message after {}ms. Reason: {}, exchangeHeaders: {}", processingDurationMs,
                         e.getMessage(), exchange.getIn().getHeaders(), e);
             }
