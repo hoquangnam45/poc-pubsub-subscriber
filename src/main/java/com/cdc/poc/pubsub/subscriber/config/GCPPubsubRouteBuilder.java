@@ -16,6 +16,7 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
@@ -25,10 +26,10 @@ public class GCPPubsubRouteBuilder extends RouteBuilder {
     String projectId;
 
     @ConfigProperty(name = "pubsub.subscription-id")
-    String subscriptionId;
+    Optional<String> subscriptionIdOpt;
 
     @ConfigProperty(name = "pubsub.pull-options")
-    String pullOptions;
+    Optional<String> pullOptionsOpt;
 
     @Inject
     ObjectMapper objectMapper;
@@ -43,6 +44,15 @@ public class GCPPubsubRouteBuilder extends RouteBuilder {
     @Override
     @SuppressWarnings("unchecked")
     public void configure() {
+        // Skip configuring Camel routes if subscription is disabled (e.g., for
+        // PUSH-only deployments)
+        if (subscriptionIdOpt.isEmpty()) {
+            log.info("Skipping GCP Pub/Sub pull consumer routes - subscription disabled");
+            return;
+        }
+        String subscriptionId = subscriptionIdOpt.get();
+        String pullOptions = pullOptionsOpt.orElse("");
+
         String consumerUri = MessageFormat.format("google-pubsub:{0}:{1}{2}", projectId, subscriptionId, pullOptions);
         log.info("Starting GCP pubsub component consumers with configs: {}", consumerUri);
         from(consumerUri).process(exchange -> {

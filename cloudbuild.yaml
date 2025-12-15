@@ -1,8 +1,15 @@
 substitutions:
-  _SERVICE_NAME: poc-pubsub-publisher
+  _SERVICE_NAME_ASYNC_PULL: poc-pubsub-subscriber-async-pull
+  _SERVICE_NAME_SYNC_PULL: poc-pubsub-subscriber-sync-pull
+  _SERVICE_NAME_PUSH: poc-pubsub-subscriber-push
   _REGION: asia-southeast1
   _PROJECT: active-bolt-478008-c9
-  _IMAGE_NAME: asia-southeast1-docker.pkg.dev/${_PROJECT}/cdc-pubsub-poc/${_SERVICE_NAME}:latest
+  _IMAGE_NAME: asia-southeast1-docker.pkg.dev/${_PROJECT}/cdc-pubsub-poc/poc-pubsub-subscriber:latest
+  _SUBSCRIPTION_ASYNC_PULL: poc-pubsub-sub-pull-async
+  _SUBSCRIPTION_SYNC_PULL: poc-pubsub-sub-pull-sync
+  _SUBSCRIPTION_PUSH: poc-pubsub-sub-push
+  _ASYNC_PULL_OPTS: ?ackMode=AUTO&synchronousPull=false
+  _SYNC_PULL_OPTS: ?ackMode=AUTO&synchronousPull=true
 
 availableSecrets:
   secretManager:
@@ -30,19 +37,59 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', '${_IMAGE_NAME}']
 
-  # Step 3: Deploy to Cloud Run
+  # Step 3: Deploy to Cloud Run - PUSH subscription subscriber
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     secretEnv: ['DB_URL', 'DB_USER', 'DB_PASSWORD']
     args:
       [
-        'run', 'deploy', '${_SERVICE_NAME}',
+        'run', 'deploy', '${_SERVICE_NAME_PUSH}',
         '--image', '${_IMAGE_NAME}',
         '--region', '${_REGION}',
         '--platform', 'managed',
         '--ingress', 'all',
-        '--set-env-vars', 'DB_URL=$$DB_URL,DB_USER=$$DB_USER,DB_PASSWORD=$$DB_PASSWORD',
-        '--port', '8080',
+        '--set-secrets', 'DB_URL=DB_URL:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest',
+        '--port', '8081',
+        '--allow-unauthenticated',
+        '--project', '${_PROJECT}',
+        '--min-instances', '1',
+        '--max-instances', '1'
+      ]
+  # Step 4: Deploy to Cloud Run - SYNC PULL subscription subscriber
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    secretEnv: ['DB_URL', 'DB_USER', 'DB_PASSWORD']
+    args:
+      [
+        'run', 'deploy', '${_SERVICE_NAME_SYNC_PULL}',
+        '--image', '${_IMAGE_NAME}',
+        '--region', '${_REGION}',
+        '--platform', 'managed',
+        '--ingress', 'all',
+        '--no-cpu-throttling',
+        '--set-secrets', 'DB_URL=DB_URL:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest',
+        '--set-env-vars', 'SUBSCRIPTION_ID=${_SUBSCRIPTION_SYNC_PULL},PULL_OPTIONS=${_SYNC_PULL_OPTS}',
+        '--port', '8081',
+        '--allow-unauthenticated',
+        '--project', '${_PROJECT}',
+        '--min-instances', '1',
+        '--max-instances', '1'
+      ]
+  # Step 5: Deploy to Cloud Run - ASYNC PULL subscription subscriber
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    secretEnv: ['DB_URL', 'DB_USER', 'DB_PASSWORD']
+    args:
+      [
+        'run', 'deploy', '${_SERVICE_NAME_ASYNC_PULL}',
+        '--image', '${_IMAGE_NAME}',
+        '--region', '${_REGION}',
+        '--platform', 'managed',
+        '--ingress', 'all',
+        '--no-cpu-throttling',
+        '--set-secrets', 'DB_URL=DB_URL:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest',
+        '--set-env-vars', 'SUBSCRIPTION_ID=${_SUBSCRIPTION_ASYNC_PULL},PULL_OPTIONS=${_ASYNC_PULL_OPTS}',
+        '--port', '8081',
         '--allow-unauthenticated',
         '--project', '${_PROJECT}',
         '--min-instances', '1',

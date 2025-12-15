@@ -16,7 +16,11 @@ quarkus:
     resources:
       includes:
         - db/migration/**
+  log:
+    category:
+      # Only enable polling requests/responses from NettyClientHandler
+      "io.grpc.netty.NettyClientHandler":
+        level: DEBUG
 pubsub:
-  topic: ${PUBSUB_TOPIC:poc-pubsub-performance}
-  subscription-id: ${SUBSCRIPTION_ID:poc-pubsub-sub-pull}
+  subscription-id: ${SUBSCRIPTION_ID}
   pull-options: ${PULL_OPTIONS}
