@@ -9,7 +9,7 @@ substitutions:
   _SUBSCRIPTION_SYNC_PULL: poc-pubsub-sub-pull-sync
   _SUBSCRIPTION_PUSH: poc-pubsub-sub-push
   _ASYNC_PULL_OPTS: ?ackMode=AUTO&synchronousPull=false
-  _SYNC_PULL_OPTS: ?ackMode=AUTO&synchronousPull=true
+  _SYNC_PULL_OPTS: ?ackMode=AUTO&synchronousPull=true&maxMessagesPerPoll=10&concurrentConsumers=1
 
 availableSecrets:
   secretManager:
@@ -89,7 +89,7 @@ steps:
         '--ingress', 'all',
         '--no-cpu-throttling',
         '--set-secrets', 'DB_URL=DB_URL:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest',
-        '--set-env-vars', 'SUBSCRIPTION_ID=${_SUBSCRIPTION_ASYNC_PULL},PULL_OPTIONS=${_ASYNC_PULL_OPTS}',
+        '--set-env-vars', 'SUBSCRIPTION_ID=${_SUBSCRIPTION_ASYNC_PULL},PULL_OPTIONS=${_ASYNC_PULL_OPTS},PARALLEL_PULL_COUNT=5,EXECUTOR_THREAD_POOL_SIZE=5',
         '--port', '8081',
         '--allow-unauthenticated',
         '--project', '${_PROJECT}',

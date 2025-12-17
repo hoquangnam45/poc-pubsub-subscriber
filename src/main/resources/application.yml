@@ -20,10 +20,28 @@ quarkus:
     resources:
       includes:
         - db/migration/**
-
+#  log:
+#    category:
+#      # Apache Camel Google PubSub consumer
+#      org.apache.camel.component.google.pubsub:
+#        level: DEBUG
+#      org.apache.camel.component.google.pubsub.GooglePubsubConsumer:
+#        level: DEBUG
+#      # Google Cloud Pub/Sub Java Subscriber
+#      com.google.cloud.pubsub.v1.Subscriber:
+#        level: DEBUG
+#      # Google API client (GAX)
+#      com.google.api.gax:
+#        level: DEBUG
+#      # gRPC transport (very verbose, enable only when needed)
+#      io.grpc:
+#        level: DEBUG
 pubsub:
   subscription-id: ${SUBSCRIPTION_ID}
   pull-options: ${PULL_OPTIONS}
+  subscriber:
+    parallel-pull-count: ${PARALLEL_PULL_COUNT}
+    executor-thread-count: ${EXECUTOR_THREAD_COUNT}
 
 workers:
   persist-result:
