@@ -6,8 +6,8 @@
         VALUES(#{testId}, #{messageId}, #{subscriptionType}, #{subscriptionId}, #{subscriptionPublishTime}, #{subscriptionArrivalTime}, #{subscriberArrivalTime}, #{pullOptions}, #{createdAt})
     </insert>
     <insert id="insertTopicResult">
-        INSERT INTO test_topic_result(test_id, message_id, topic_arrival_time, topic_publish_time)
-        VALUES (#{testId}, #{messageId}, #{topicArrivalTime}, #{topicPublishTime})
+        INSERT INTO test_topic_result(test_id, message_id, topic_id, topic_arrival_time, topic_publish_time)
+        VALUES (#{testId}, #{messageId}, #{topicId}, #{topicArrivalTime}, #{topicPublishTime})
         ON CONFLICT (test_id, message_id) DO NOTHING
     </insert>
 </mapper>

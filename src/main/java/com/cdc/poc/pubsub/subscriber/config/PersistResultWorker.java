@@ -37,7 +37,7 @@ public class PersistResultWorker {
                 try {
                     Instant topicPublishTime = header.topicPublishTime() == null ? res.topicPublishTime()
                             : header.topicPublishTime();
-                    stressTestRepo.insertTopicResult(header.testId(), header.messageId(), header.topicArrivalTime(),
+                    stressTestRepo.insertTopicResult(header.testId(), header.messageId(), header.topicArrivalTime(), header.topicId(),
                             topicPublishTime);
                     stressTestRepo.createSubscriberResult(new TestSubscriberResult(header.testId(), header.messageId(),
                             header.subscriptionType(), header.subscriptionId(),

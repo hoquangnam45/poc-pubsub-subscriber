@@ -5,11 +5,11 @@ substitutions:
   _REGION: asia-southeast1
   _PROJECT: active-bolt-478008-c9
   _IMAGE_NAME: asia-southeast1-docker.pkg.dev/${_PROJECT}/cdc-pubsub-poc/poc-pubsub-subscriber:latest
-  _SUBSCRIPTION_ASYNC_PULL: poc-pubsub-sub-pull-async
-  _SUBSCRIPTION_SYNC_PULL: poc-pubsub-sub-pull-sync
-  _SUBSCRIPTION_PUSH: poc-pubsub-sub-push
+  _SUBSCRIPTION_ASYNC_PULL: poc-pubsub-performance-pull-async-sub
+  _SUBSCRIPTION_SYNC_PULL: poc-pubsub-performance-pull-sync-sub
+  _SUBSCRIPTION_PUSH: poc-pubsub-performance-push-sub
   _ASYNC_PULL_OPTS: ?ackMode=AUTO&synchronousPull=false
-  _SYNC_PULL_OPTS: ?ackMode=AUTO&synchronousPull=true&maxMessagesPerPoll=10&concurrentConsumers=1
+  _SYNC_PULL_OPTS: ?ackMode=AUTO&synchronousPull=true&maxMessagesPerPoll=10
 
 availableSecrets:
   secretManager:
@@ -89,7 +89,7 @@ steps:
         '--ingress', 'all',
         '--no-cpu-throttling',
         '--set-secrets', 'DB_URL=DB_URL:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest',
-        '--set-env-vars', 'SUBSCRIPTION_ID=${_SUBSCRIPTION_ASYNC_PULL},PULL_OPTIONS=${_ASYNC_PULL_OPTS},PARALLEL_PULL_COUNT=5,EXECUTOR_THREAD_POOL_SIZE=5',
+        '--set-env-vars', 'SUBSCRIPTION_ID=${_SUBSCRIPTION_ASYNC_PULL},PULL_OPTIONS=${_ASYNC_PULL_OPTS},PARALLEL_PULL_COUNT=5,EXECUTOR_THREAD_COUNT=5',
         '--port', '8081',
         '--allow-unauthenticated',
         '--project', '${_PROJECT}',

@@ -9,6 +9,6 @@ import java.util.UUID;
 
 @Mapper
 public interface StressTestRepo {
-    void insertTopicResult(@Param("testId") UUID testId, @Param("messageId") UUID messageId, @Param("topicArrivalTime") Instant topicArrivalTime, @Param("topicPublishTime") Instant topicPublishTime);
+    void insertTopicResult(@Param("testId") UUID testId, @Param("messageId") UUID messageId, @Param("topicArrivalTime") Instant topicArrivalTime, @Param("topicId") String topicId, @Param("topicPublishTime") Instant topicPublishTime);
     void createSubscriberResult(TestSubscriberResult result);
 }
