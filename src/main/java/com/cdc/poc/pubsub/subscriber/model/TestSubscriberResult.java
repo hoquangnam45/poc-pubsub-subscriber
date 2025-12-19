@@ -6,6 +6,7 @@ import java.util.UUID;
 public record TestSubscriberResult(
         UUID testId,
         UUID messageId,
+        String topicId,
         String subscriptionType,
         String subscriptionId,
         Instant subscriptionPublishTime,

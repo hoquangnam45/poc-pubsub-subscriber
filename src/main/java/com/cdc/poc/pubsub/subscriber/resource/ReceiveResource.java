@@ -4,8 +4,6 @@ import com.cdc.poc.pubsub.subscriber.config.PersistResultWorker;
 import com.cdc.poc.pubsub.subscriber.model.PocPubsubPerformanceHeader;
 import com.cdc.poc.pubsub.subscriber.model.PubsubMessage;
 import com.cdc.poc.pubsub.subscriber.model.PushRequest;
-import com.cdc.poc.pubsub.subscriber.model.TestSubscriberResult;
-import com.cdc.poc.pubsub.subscriber.repo.StressTestRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
@@ -50,8 +48,8 @@ public class ReceiveResource {
                 if (lastLogTime.compareAndSet(lastLog, currentTime)) {
                     long interval = currentTime - lastLog;
                     log.info(
-                            "Push subscriber throughput stats: subscriptionType={}, subscriptionId={}, messagesProcessed={}, intervalMs={}, avgMsgPerSec={}",
-                            header.subscriptionType(), header.subscriptionId(), count, interval,
+                            "Push subscriber throughput stats: subscriptionType={}, subscriptionId={}, topicId={}, messagesProcessed={}, intervalMs={}, avgMsgPerSec={}",
+                            header.subscriptionType(), header.subscriptionId(), header.topicId(), count, interval,
                                 (count * 1000.0) / interval);
                     messageCount.set(0);
                 }

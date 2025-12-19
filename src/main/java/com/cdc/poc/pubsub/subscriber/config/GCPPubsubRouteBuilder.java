@@ -109,8 +109,8 @@ public class GCPPubsubRouteBuilder extends RouteBuilder {
                     if (lastLogTime.compareAndSet(lastLog, currentTime)) {
                         long interval = currentTime - lastLog;
                         log.info(
-                                "Subscriber throughput stats: subscriptionType={}, subscriptionId={}, pullOptions={}, messagesProcessed={}, intervalMs={}, avgMsgPerSec={}",
-                                header.subscriptionType(), header.subscriptionId(), pullOptions, count, interval,
+                                "Subscriber throughput stats: subscriptionType={}, subscriptionId={}, topicId={}, pullOptions={}, messagesProcessed={}, intervalMs={}, avgMsgPerSec={}",
+                                header.subscriptionType(), header.subscriptionId(), header.topicId(), pullOptions, count, interval,
                                 (count * 1000.0) / interval);
                         messageCount.set(0);
                     }
