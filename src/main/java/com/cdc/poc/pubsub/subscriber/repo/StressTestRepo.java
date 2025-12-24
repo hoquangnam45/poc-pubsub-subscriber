@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface StressTestRepo {
     void insertTopicResult(@Param("testId") UUID testId, @Param("messageId") UUID messageId, @Param("topicArrivalTime") Instant topicArrivalTime, @Param("topicId") String topicId, @Param("topicPublishTime") Instant topicPublishTime);
     void createSubscriberResult(TestSubscriberResult result);
+    boolean existRecord(@Param("testId") UUID testId, @Param("topicId") String topicId, @Param("subscriptionId") String subscriptionId, @Param("messageId") UUID messageId);
 }

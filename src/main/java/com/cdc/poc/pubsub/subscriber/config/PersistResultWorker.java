@@ -6,6 +6,7 @@ import com.cdc.poc.pubsub.subscriber.repo.StressTestRepo;
 import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.UserTransaction;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -27,6 +28,9 @@ public class PersistResultWorker {
     @Inject
     StressTestRepo stressTestRepo;
 
+    @Inject
+    UserTransaction userTransaction;
+
     @Startup
     void onStart() {
         ExecutorService executorService = Executors.newFixedThreadPool(workerSize);
@@ -35,8 +39,14 @@ public class PersistResultWorker {
                 var res = messageHeaderQueue.take();
                 var header = res.header();
                 try {
+                    userTransaction.begin();
                     Instant topicPublishTime = header.topicPublishTime() == null ? res.topicPublishTime()
                             : header.topicPublishTime();
+                    boolean exist = stressTestRepo.existRecord(header.testId(), header.topicId(), header.subscriptionId(), header.messageId());
+                    if (exist) {
+                        userTransaction.commit();
+                        continue;
+                    }
                     stressTestRepo.insertTopicResult(header.testId(), header.messageId(), header.topicArrivalTime(), header.topicId(),
                             topicPublishTime);
                     stressTestRepo.createSubscriberResult(new TestSubscriberResult(header.testId(), header.messageId(), header.topicId(),
@@ -44,8 +54,10 @@ public class PersistResultWorker {
                             header.subscriptionPublishTime() == null ? res.topicPublishTime()
                                     : header.subscriptionPublishTime(),
                             header.subscriptionArrivalTime(), res.subscriberReceiveAt(), res.pullOptions(), Instant.now()));
+                    userTransaction.commit();
                 } catch (Exception e) {
                     log.error("Error persisting subscriber result. testId={}, messageId={}, subscriptionId={}, pullOptions={}. Reason: {}", header.testId(), header.messageId(), header.subscriptionId(), res.pullOptions(), e.getMessage(), e);
+                    userTransaction.rollback();
                 }
             }
         });

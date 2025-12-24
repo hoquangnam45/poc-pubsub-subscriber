@@ -9,4 +9,7 @@
         INSERT INTO test_topic_result(test_id, message_id, topic_id, topic_arrival_time, topic_publish_time)
         VALUES (#{testId}, #{messageId}, #{topicId}, #{topicArrivalTime}, #{topicPublishTime})
     </insert>
+    <select id="existRecord" resultType="java.lang.Boolean">
+        SELECT EXISTS(SELECT * FROM test_subscriber_result tsr WHERE tsr.test_id = #{testId} AND tsr.topic_id = #{topicId} AND tsr.subscription_id = #{subscriptionId} AND tsr.message_id = #{messageId})
+    </select>
 </mapper>
