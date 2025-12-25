@@ -44,6 +44,7 @@ public class PersistResultWorker {
                             : header.topicPublishTime();
                     boolean exist = stressTestRepo.existRecord(header.testId(), header.topicId(), header.subscriptionId(), header.messageId());
                     if (exist) {
+                        log.info("Detect duplicate message. testId={}, messageId={}, topicId={}, subscriptionId={}, pullOptions={}", header.testId(), header.messageId(), header.topicId(), header.subscriptionId(), res.pullOptions());
                         userTransaction.commit();
                         continue;
                     }
